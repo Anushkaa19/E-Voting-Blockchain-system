@@ -12,10 +12,10 @@ contract Transaction{
         string user_id;
         string election_id;
         string candidate_id;
-        uint timestamp;
+        uint timestamp; 
     }
 
-    TransactionStruct[] transactions;
+    TransactionStruct[] public transactions;
 
     function addToBlockchain(address payable receiver,string memory user_id,string memory election_id,string memory candidate_id) public {
         transactionCounter+=1;
@@ -23,10 +23,10 @@ contract Transaction{
 
         emit Transfer(msg.sender,receiver,user_id,election_id,candidate_id,block.timestamp);
     }
-
-    function getAllTransaction() public view returns (TransactionStruct[] memory){
-        return transactions;
-    }
+    
+    function getAllTransaction() public view returns (TransactionStruct[] memory) {
+    return transactions;
+}
 
     function getTransactionCount() public view returns (uint256){
         return transactionCounter;

@@ -19,6 +19,7 @@ const Election = () => {
     async function getData() {
       let res = await axios.get(serverLink + "voting/elections");
       let users = res.data;
+      console.log("Election Data:", users);
       setData(users);
     }
     getData();

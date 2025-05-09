@@ -270,7 +270,7 @@ export const elections = {
   },
   voting: async (req, res) => {
     try {
-      const tmp = await Election.find({ currentPhase: "voting" });
+      const tmp = await Election.find({ currentPhase: "init" });
       return res.status(201).send(tmp);
     } catch (e) {
       return res.status(500).send("Error");
@@ -278,7 +278,8 @@ export const elections = {
   },
   result: async (req, res) => {
     try {
-      const tmp = await Election.find({ currentPhase: "result" });
+      const tmp = await Election.find({ currentPhase: "init" });
+      console.log("result data", tmp);
       return res.status(201).send(tmp);
     } catch (e) {
       return res.status(500).send("Error");

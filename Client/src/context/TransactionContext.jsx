@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { contractABI, contractAddress } from "../utils/Constant";
-
 export const TransactionContext = React.createContext();
 
 const { ethereum } = window;
@@ -12,6 +11,10 @@ export const TransactionProvider = ({ children }) => {
     localStorage.getItem("transactionCount")
   );
   const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    connectWallet();
+  }, []);
 
   const createEthereumContract = () => {
     const provider = new ethers.providers.Web3Provider(ethereum);
@@ -27,17 +30,23 @@ export const TransactionProvider = ({ children }) => {
 
   const connectWallet = async () => {
     try {
-      if (!ethereum) return alert("Please install MetaMask.");
+      if (!window.ethereum) {
+        alert("Please install MetaMask.");
+        return;
+      }
 
-      const accounts = await ethereum.request({
+      const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
 
-      setCurrentAccount(accounts[0]);
+      if (accounts.length > 0) {
+        console.log(" Connected account:", accounts[0]);
+        setCurrentAccount(accounts[0]); // Also update your state
+      } else {
+        console.warn("No accounts found.");
+      }
     } catch (error) {
-      console.log(error);
-
-      throw new Error("No ethereum object");
+      console.error("Error connecting wallet:", error);
     }
   };
 
@@ -80,9 +89,13 @@ export const TransactionProvider = ({ children }) => {
     try {
       if (ethereum) {
         const transactionsContract = createEthereumContract();
-
+        console.log("Connected to smart contract");
         const availableTransactions =
           await transactionsContract.getAllTransaction();
+        console.log(
+          "Raw transactions fetched from contract:",
+          availableTransactions
+        );
 
         const structuredTransactions = availableTransactions.map(
           (transaction) => ({
@@ -95,8 +108,13 @@ export const TransactionProvider = ({ children }) => {
             user_id: transaction.user_id,
           })
         );
-
+        console.log(
+          "Transactions structured successfully:",
+          structuredTransactions
+        );
         setTransactions(structuredTransactions);
+        console.log("set transactions");
+
         return structuredTransactions;
       } else {
         console.log("Ethereum is not present");

@@ -22,6 +22,8 @@ const ResultElection = () => {
     async function getData() {
       let res = await axios.get(serverLink + "result/elections");
       let users = res.data;
+      console.log("users", users);
+
       let transactions = await getAllTransactions();
       let result = await getResult(transactions);
       let ans = [];
