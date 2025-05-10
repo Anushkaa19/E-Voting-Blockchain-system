@@ -28,6 +28,14 @@ To compile the contract, open the command prompt and navigate to the `smart_cont
 
 After installing Ganache, compile the contract in `/smart_contract` using Truffle. Then, add the transaction address in `Client/utils/Constant.js`. Also, copy `/smart_contract/build/contracts/Transaction.json` and paste it in `Client/utils/Transaction.json` for ABI value.
 
+
+### To Enable sending Emails using the address in the `.env` file, follow the steps:
+1. Go to your Google account - Manage Account (the account from which you wish to send emails).
+2. Go to Security, and enable 2 Factor authentication (2FA).
+3. In the search bar at the top, search for "App Passwords" & cick on App Passwords.
+4. Name your app, and click on Create button.
+5. Copy the password generated and paste it in the `.env` file in the email password field. (Note that this can't be viewed again. In that case, you need to regenerate the App Password)
+
 ### Python Script(required for face authentication)🐍
 
 To install the necessary packages for the Python script, use the command `pip install opencv-python, numpy, os, face_recognition`. Add photos to `/Face` with the same username in use. To add a URL for photos, go to `/server/Controller/encoded.py` line 6.
