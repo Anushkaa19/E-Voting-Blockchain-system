@@ -6,6 +6,9 @@ import User from "../Models/User.js";
 import Election from "../Models/Election.js";
 import Candidate from "../Models/Candidate.js";
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+dotenv.config();
+
 
 // http://localhost:5000/api/auth/register
 //
@@ -18,7 +21,7 @@ import nodemailer from "nodemailer";
 //     }
 
 //User
-var storage = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "Faces");
   },
@@ -26,7 +29,7 @@ var storage = multer.diskStorage({
     cb(null, req.body.username + "." + file.originalname.split(".").pop());
   },
 });
-var upload = multer({ storage: storage }).single("profile");
+const upload = multer({ storage: storage }).single("profile");
 export const register = {
   validator: async (req, res, next) => {
     next();
@@ -40,10 +43,11 @@ export const register = {
       }
       try {
         const newUser = await User.create(req.body);
+        console.log("New user registered: ", newUser);
 
-        const mailContent = "Thank You For Joining the Voting System";
+        const mailContent = `Thank You For Joining the Voting System. \nYour username: ${newUser.username}\nYour password: ${newUser.password}\n\nIf it's not you contact ${process.env.EMAIL}\n\nThanks\nVoting System\n\n`;
 
-        const mailSubject = "Welcome Mail";
+        const mailSubject = `Welcome to Voting System ${newUser.fname} ${newUser.lname}`;
 
         const findUser = await User.findOne({ email: req.body.email });
         //Try to use newUser
@@ -296,28 +300,39 @@ export const elections = {
 };
 
 const sendMail = async (mailContent, mailSubject, user) => {
-  var transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.EMAILPASSWORD,
-    },
-  });
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true, // true for 465, false for other ports
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAILPASSWORD,
+      },
+    });
 
-  var mailOptions = {
-    from: process.env.EMAIL,
-    to: user.email,
-    subject: mailSubject,
-    text: mailContent,
-  };
+    // verify the connection configuration
+    transporter.verify((error, success) => {
+      if (error) {
+        console.log("Error in Transporter:", error);
+      } else {
+        console.log("Server is ready to take our messages: " + success);
+      }
+    });
 
-  await transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      return false;
-    } else {
-      return true;
-    }
-  });
+    const mailOptions = {
+      from: `Voting System <${process.env.EMAIL}>`,
+      to: user.email,
+      subject: mailSubject,
+      text: mailContent,
+    };
+
+    await transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log("Error: " + error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
 };
 
 export const a = {
@@ -352,10 +367,11 @@ export const votingMail = {
 
     const findUser = await User.findOne({ _id: req.body.id });
 
-    if (sendMail(mailContent, mailSubject, findUser)) {
+    try {
+      await sendMail(mailContent, mailSubject, findUser)
       return res.status(201).send("Email Sent");
-    } else {
+    } catch (err) {
       return res.status(301).send("Email Sending Failed");
     }
-  },
+  }
 };
